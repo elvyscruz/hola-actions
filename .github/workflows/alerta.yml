@@ -1,0 +1,35 @@
+name: Test hola.js
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  test-hola:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Run test hola.js
+        run: |
+          OUTPUT=$(node hola.js)
+          if [ "$OUTPUT" != "hola mundo" ]; then
+            echo "Salida incorrecta: $OUTPUT"
+            exit 1
+          fi
+
+      - name: Notify failure via ntfy
+        if: failure()
+        run: |
+          curl -X POST https://ntfy.sh/devops-itla \
+            -H "Title: ❌ Test fallido" \
+            -H "Priority: high" \
+            -d "El test de hola.js falló en el branch main"
